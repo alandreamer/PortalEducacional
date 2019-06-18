@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	
+	<ui:define name="corpo">
+		<br />
+		<h1 class="aw-page-title">Plano de Aula</h1>
+		<h:form id="frm">
+			
+			<p:messages id="msgs" closable="true"/>
+			
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						process="@this" update="plano-dialog"
+						oncomplete="PF('edicaoPlanoDialog').show()">
+						<p:resetInput target="plano-dialog" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical" />
+            		</span>
+            		
+            		<p:commandButton value="Ver" icon="ui-icon-search"
+						process="@this" update="planoDetail"
+						oncomplete="PF('planoDialog').show()"
+						disabled="#{planoAulaController.planoAulaSelecionado == null}">
+					</p:commandButton>
+            		
+            		<p:commandButton value="Editar" icon="ui-icon-pencil" title="Editar" 
+            			process="@this" update="planoEditar-dialog"
+            			oncomplete="PF('editarPlanoDialog').show()"
+            			disabled="#{planoAulaController.planoAulaSelecionado == null}">
+            			<p:resetInput target="planoEditar-dialog" />
+            			
+            			<f:setPropertyActionListener value="#{planoAulaController.planoAulaSelecionado}" 
+            				target="#{planoAulaController.planoAula}" />
+            		</p:commandButton>
+            		
+            		<p:commandButton value="Excluir" icon="ui-icon-trash" title="Excluir"
+            			process="@this" update="planos msgs toolbar"
+            			action="#{planoAulaController.deletar}"
+            			disabled="#{planoAulaController.planoAulaSelecionado == null}">
+            			
+            			<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+            				message="Tem certeza que deseja excluir o plano de aula?" />
+            			
+            		</p:commandButton>
+				</f:facet>
+			</p:toolbar>
+					
+			<p:dialog header="Novo plano de aula" widgetVar="edicaoPlanoDialog" id="plano-dialog"
+					resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="plano-dialog" />
+				
+				<p:panelGrid columns="2" id="painel-dialog">
+					<p:outputLabel value="Data da Aula" for="dataaula"/>
+					<p:calendar style="float: left; width: 85px" id="dataaula" pattern="dd/MM/yyyy" value="#{planoAulaController.planoAula.dataAula}"/>
+					
+					<p:outputLabel value="Objetivos da Aula" for="objetivoaula" />
+					<p:inputTextarea rows="6" cols="33" id="objetivoaula" value="#{planoAulaController.planoAula.objetivoAula}" style="width: 280px" />
+					
+					<p:outputLabel value="Metodologia de Ensino" for="metodologia" />
+					<p:inputTextarea rows="6" cols="33" id="metodologia" value="#{planoAulaController.planoAula.metodologia}" />
+				
+					<p:outputLabel value="Leitura Obrigatória" for="leitura" />
+					<p:inputTextarea rows="6" cols="33" id="leitura" value="#{planoAulaController.planoAula.leitura}" />
+				
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{planoAulaController.salvar}"
+						process="plano-dialog" update="msgs-dialog painel-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('edicaoPlanoDialog').hide()" />					
+				</p:panelGrid>
+			  </p:dialog>
+			  
+			  <p:dataTable id="planos" var="planoAula" widgetVar="planosTable" value="#{planoAulaController.listaPlano}" rowKey="#{planoAula.id}"
+				 emptyMessage="Sem cadastros até o momento."
+                 selection="#{planoAulaController.planoAulaSelecionado}" selectionMode="single">
+                 	
+                <p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+                 
+			    <p:column headerText="Id">
+			    	<h:outputText value="#{planoAula.id}" />
+			    </p:column>
+			    <p:column headerText="Objetivo da Aula">
+			        <h:outputText value="#{planoAula.objetivoAula}" />
+			    </p:column>
+			    <p:column headerText="Data da aula">
+			        <h:outputText value="#{planoAula.dataEntregaFormat}" />
+			    </p:column>
+			    
+			
+			</p:dataTable>
+			
+			<p:dialog header="Plano de Aula Info" widgetVar="planoDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+				<p:outputPanel id="planoDetail" style="text-align:center;">
+			   		<p:panelGrid  columns="2" rendered="#{not empty planoAulaController.planoAulaSelecionado}" columnClasses="label,value">
+			                
+			      		<h:outputText value="Data" />
+			            <h:outputText value="#{planoAulaController.planoAulaSelecionado.dataEntregaFormat}" />
+			 
+			            <h:outputText value="Objetivo da Aula" />
+			            <h:outputText value="#{planoAulaController.planoAulaSelecionado.objetivoAula}" />
+			 
+			            <h:outputText value="Metodologia" />
+			            <h:outputText value="#{planoAulaController.planoAulaSelecionado.metodologia}"/>
+			 
+			            <h:outputText value="Leitura Obrigatória" />
+			            <h:outputText value="#{planoAulaController.planoAulaSelecionado.leitura}" />
+			       	</p:panelGrid>
+				</p:outputPanel>
+			</p:dialog>
+		</h:form>
+	</ui:define>
+</ui:composition>

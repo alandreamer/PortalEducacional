@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	
+	<ui:define name="corpo">
+		<br />
+		<h1 class="aw-page-title">Gerenciar Disciplina</h1>
+		<h:form id="frm">
+			
+			<p:messages id="msgs" closable="true"/>
+			
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						process="@this" update="disciplina-dialog"
+						oncomplete="PF('edicaoDisciplinaDialog').show()">
+						<p:resetInput target="disciplina-dialog" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical" />
+            		</span>
+            		
+            		<p:commandButton value="Editar" icon="ui-icon-pencil" title="Editar" 
+            			process="@this" update="disciplinaEditar-dialog"
+            			oncomplete="PF('editarDisciplinaDialog').show()"
+            			disabled="#{disciplinaController.disciplinaSelecionada == null}">
+            			<p:resetInput target="disciplinaEditar-dialog" />
+            			
+            			<f:setPropertyActionListener value="#{disciplinaController.disciplinaSelecionada}" 
+            				target="#{disciplinaController.disciplina}" />
+            		</p:commandButton>
+
+            		<p:commandButton value="Excluir" icon="ui-icon-trash" title="Excluir"
+            			process="@this" update="disciplinas msgs toolbar"
+            			action="#{disciplinaController.deletar}"
+            			disabled="#{disciplinaController.disciplinaSelecionada == null}">
+            			
+            			<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+            				message="Tem certeza que deseja excluir a disciplina?" />
+            			
+            		</p:commandButton>
+				</f:facet>
+			</p:toolbar>
+			
+			<p:dialog header="Nova disciplina" widgetVar="edicaoDisciplinaDialog" id="disciplina-dialog"
+					resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="disciplina-dialog" />
+				
+				<p:panelGrid columns="4" id="painel-dialog">
+					<p:outputLabel value="Nome da disciplina" for="nome" />
+					<p:inputText id="nome" value="#{disciplinaController.disciplina.nomeDisciplina}" style="width: 280px" />
+					
+					
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{disciplinaController.salvar}"
+						process="disciplina-dialog" update="msgs-dialog painel-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('edicaoDisciplinaDialog').hide()" />									
+				</p:panelGrid>
+			</p:dialog>
+			
+			<p:dataTable id="disciplinas" var="disciplina" widgetVar="disciplinasTable" value="#{disciplinaController.listaDisciplinas}" rowKey="#{disciplina.id}"
+				 emptyMessage="Sem cadastros até o momento."
+                 selection="#{disciplinaController.disciplinaSelecionada}" selectionMode="single">
+                 	
+                <p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+                 
+			    <p:column headerText="Id">
+			    	<h:outputText value="#{disciplina.id}" />
+			    </p:column>
+			    <p:column headerText="Nome">
+			        <h:outputText value="#{disciplina.nomeDisciplina}" />
+			    </p:column>
+			</p:dataTable> 
+
+			    
+			<p:dialog header="Editar disciplina" widgetVar="editarDisciplinaDialog" id="disciplinaEditar-dialog"
+				resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs2-dialog" />
+				<p:defaultCommand target="salvarEditar-button" scope="disciplinaEditar-dialog" />
+				
+				<p:panelGrid columns="4" id="painelEditar-dialog">
+					<p:outputLabel value="Nome da disciplina" for="nome2" />
+					<p:inputText id="nome2" value="#{disciplinaController.disciplina.nomeDisciplina}" style="width: 280px" />
+					
+					<p:commandButton value="Salvar" id="salvarEditar-button"
+						action="#{disciplinaController.editar}"
+						process="disciplinaEditar-dialog" update="disciplinas msgs2-dialog painelEditar-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('editarDisciplinaDialog').hide()" />									
+				</p:panelGrid>
+			</p:dialog>
+			    
+		</h:form>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	
+	<ui:define name="corpo">
+		<br />
+		<h1 class="aw-page-title">Gerenciar Aluno</h1>
+		<h:form id="frm">
+			
+			<p:messages id="msgs" closable="true"/>
+			
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						process="@this" update="aluno-dialog"
+						oncomplete="PF('edicaoAlunoDialog').show()">
+						<p:resetInput target="aluno-dialog" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical" />
+            		</span>
+            		
+            		<p:commandButton value="Ver" icon="ui-icon-search"
+						process="@this" update="alunoDetail"
+						oncomplete="PF('alunoDialog').show()"
+						disabled="#{alunoController.alunoSelecionado == null}">
+					</p:commandButton>
+            		
+            		<p:commandButton value="Editar" icon="ui-icon-pencil" title="Editar" 
+            			process="@this" update="alunoEditar-dialog"
+            			oncomplete="PF('editarAlunoDialog').show()"
+            			disabled="#{alunoController.alunoSelecionado == null}">
+            			<p:resetInput target="alunoEditar-dialog" />
+            			
+            			<f:setPropertyActionListener value="#{alunoController.alunoSelecionado}" 
+            				target="#{alunoController.aluno}" />
+            		</p:commandButton>
+            		
+            		<p:commandButton value="Excluir" icon="ui-icon-trash" title="Excluir"
+            			process="@this" update="alunos msgs toolbar"
+            			action="#{alunoController.deletar}"
+            			disabled="#{alunoController.alunoSelecionado == null}">
+            			
+            			<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+            				message="Tem certeza que deseja excluir o aluno?" />
+            			
+            		</p:commandButton>
+				</f:facet>
+			</p:toolbar>
+			
+			<p:dialog header="Novo aluno" widgetVar="edicaoAlunoDialog" id="aluno-dialog"
+					resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="aluno-dialog" />
+				
+				<p:panelGrid columns="4" id="painel-dialog">
+					<p:outputLabel value="Nome completo" for="nome" />
+					<p:inputText id="nome" value="#{alunoController.aluno.nomeAluno}" style="width: 280px" />
+					
+					<p:outputLabel value="Data de nascimento" for="datanascimento"/>
+					<p:calendar style="float: left; width: 85px" id="datanascimento" pattern="dd/MM/yyyy" value="#{alunoController.aluno.dataNascimento}"/>
+					
+					<p:outputLabel value="E-mail" for="email" />
+					<p:inputText id="email" value="#{alunoController.aluno.email}" style="width: 280px" />
+					
+					<p:outputLabel value="CPF" for="cpf" />
+					<p:inputMask id="cpf" mask="999.999.999-99" value="#{alunoController.aluno.cpf}" style="float: left; width: 120px" />
+					
+					<p:outputLabel value="Número de matrícula" for="matricula" />
+					<p:inputMask id="matricula" mask="999999999" value="#{alunoController.aluno.numMatricula}" style="width: 150px" >
+						<f:convertNumber integerOnly="true"/>
+					</p:inputMask>
+					
+					<p:outputLabel value="Telefone" for="telefone" />
+					<p:inputMask id="telefone" mask="(99) 99999-9999" value="#{alunoController.aluno.telefone}" style="width: 120px" />
+					
+					<p:outputLabel value="Curso" for="curso" />
+					<p:selectOneMenu id="curso" value="#{alunoController.curso}" style="float: left; width: 150px">
+						<f:selectItem itemLabel="Escolha um curso"/>					
+						<f:selectItems value="#{alunoController.cursoSelect}" var="curso" itemValue="#{curso}"/>
+					</p:selectOneMenu>
+					
+					<p:outputLabel value="Logradouro" for="logradouro" />
+					<p:inputText id="logradouro" value="#{alunoController.endereco.logradouro}" style="width: 280px" />
+					
+					<p:outputLabel value="Bairro" for="bairro" />
+					<p:inputText id="bairro" value="#{alunoController.endereco.bairro}" style="width: 280px" />
+					
+					<p:outputLabel value="Complemento" for="complemento" />
+					<p:inputText id="complemento" value="#{alunoController.endereco.complemento}" style="width: 280px" />
+					
+					<p:outputLabel value="CEP" for="cep" />
+					<p:inputMask id="cep" mask="99999-999" value="#{alunoController.endereco.cep}" style="width: 150px">
+					<f:ajax listener="#{alunoController.encontraCep}" execute="@this" render="logradouro bairro cidade uf" event="blur"/>
+					</p:inputMask>
+					
+					<p:outputLabel value="Cidade" for="cidade" />
+					<p:inputText id="cidade" value="#{alunoController.endereco.cidade}" style="width: 280px" />
+					
+					<p:outputLabel value="UF" for="uf" />
+					<p:selectOneMenu id="uf" value="#{alunoController.endereco.uf}" style="float: left; width: 150px">						
+						<f:selectItem itemLabel="Escolha o UF" itemValue=""/>
+						<f:selectItem itemLabel="AC" itemValue="AC"/>
+						<f:selectItem itemLabel="AL" itemValue="AL"/>
+						<f:selectItem itemLabel="AM" itemValue="AM"/>
+						<f:selectItem itemLabel="AP" itemValue="AP"/>
+						<f:selectItem itemLabel="BA" itemValue="BA"/>
+						<f:selectItem itemLabel="CE" itemValue="CE"/>
+						<f:selectItem itemLabel="DF" itemValue="DF"/>
+						<f:selectItem itemLabel="ES" itemValue="ES"/>
+						<f:selectItem itemLabel="GO" itemValue="GO"/>
+						<f:selectItem itemLabel="MA" itemValue="MA"/>
+						<f:selectItem itemLabel="MG" itemValue="MG"/>
+						<f:selectItem itemLabel="MS" itemValue="MS"/>
+						<f:selectItem itemLabel="MT" itemValue="MT"/>
+						<f:selectItem itemLabel="PA" itemValue="PA"/>
+						<f:selectItem itemLabel="PB" itemValue="PB"/>
+						<f:selectItem itemLabel="PE" itemValue="PE"/>
+						<f:selectItem itemLabel="PI" itemValue="PI"/>
+						<f:selectItem itemLabel="PR" itemValue="PR"/>
+						<f:selectItem itemLabel="RJ" itemValue="RJ"/>
+						<f:selectItem itemLabel="RN" itemValue="RN"/>
+						<f:selectItem itemLabel="RO" itemValue="RO"/>
+						<f:selectItem itemLabel="RR" itemValue="RR"/>
+						<f:selectItem itemLabel="RS" itemValue="RS"/>
+						<f:selectItem itemLabel="SC" itemValue="SC"/>
+						<f:selectItem itemLabel="SE" itemValue="SE"/>
+						<f:selectItem itemLabel="SP" itemValue="SP"/>
+						<f:selectItem itemLabel="TO" itemValue="TO"/>
+					</p:selectOneMenu>
+					
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{alunoController.salvar}"
+						process="aluno-dialog" update="msgs-dialog painel-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('edicaoAlunoDialog').hide()" />									
+				</p:panelGrid>
+			</p:dialog>
+			
+			<p:dataTable id="alunos" var="aluno" widgetVar="alunosTable" value="#{alunoController.listaAlunos}" rowKey="#{aluno.id}"
+				 emptyMessage="Sem cadastros até o momento."
+                 selection="#{alunoController.alunoSelecionado}" selectionMode="single">
+                 	
+                <p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+                 
+			    <p:column headerText="Id">
+			    	<h:outputText value="#{aluno.id}" />
+			    </p:column>
+			    <p:column headerText="Nome">
+			        <h:outputText value="#{aluno.nomeAluno}" />
+			    </p:column>
+			    <p:column headerText="CPF">
+			        <h:outputText value="#{aluno.cpf}" />
+			    </p:column>
+			    <p:column headerText="Matrícula">
+			        <h:outputText value="#{aluno.numMatricula}" />
+			    </p:column>
+			    <p:column headerText="Telefone">
+			        <h:outputText value="#{aluno.telefone}" />
+			    </p:column>
+			    <p:column headerText="Cidade">
+			        <h:outputText value="#{aluno.endereco.cidade}" />
+			    </p:column>
+			    
+			
+			</p:dataTable> 
+			 
+			<p:dialog header="Aluno Info" widgetVar="alunoDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+				<p:outputPanel id="alunoDetail" style="text-align:center;">
+			   		<p:panelGrid  columns="2" rendered="#{not empty alunoController.alunoSelecionado}" columnClasses="label,value">
+			                
+			      		<h:outputText value="Matrícula" />
+			            <h:outputText value="#{alunoController.alunoSelecionado.id}" />
+			 
+			            <h:outputText value="Nome" />
+			            <h:outputText value="#{alunoController.alunoSelecionado.nomeAluno}" />
+			 
+			            <h:outputText value="Nasceu em" />
+			            <h:outputText value="#{alunoController.alunoSelecionado.dataNascimento}"/>
+			 
+			            <h:outputText value="CPF" />
+			            <h:outputText value="#{alunoController.alunoSelecionado.cpf}" />
+			       	</p:panelGrid>
+				</p:outputPanel>
+			</p:dialog>
+			    
+			<p:dialog header="Editar aluno" widgetVar="editarAlunoDialog" id="alunoEditar-dialog"
+				resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs2-dialog" />
+				<p:defaultCommand target="salvarEditar-button" scope="alunoEditar-dialog" />
+				
+				<p:panelGrid columns="4" id="painelEditar-dialog">
+					<p:outputLabel value="Nome completo" for="nome2" />
+					<p:inputText id="nome2" value="#{alunoController.aluno.nomeAluno}" style="width: 280px" />
+					
+					<p:outputLabel value="Data de nascimento" for="datanascimento2"/>
+					<p:calendar style="float: left; width: 85px" id="datanascimento2" pattern="dd/MM/yyyy" value="#{alunoController.aluno.dataNascimento}"/>
+					
+					<p:outputLabel value="E-mail" for="email2" />
+					<p:inputText id="email2" value="#{alunoController.aluno.email}" style="width: 280px" />
+					
+					<p:outputLabel value="CPF" for="cpf2" />
+					<p:inputMask id="cpf2" mask="999.999.999-99" value="#{alunoController.aluno.cpf}" style="float: left; width: 120px" />
+					
+					<p:outputLabel value="Número de matrícula" for="matricula2" />
+					<p:inputMask id="matricula2" mask="999999999" value="#{alunoController.aluno.numMatricula}" style="width: 150px" >
+						<f:convertNumber integerOnly="true"/>
+					</p:inputMask>
+					
+					<p:outputLabel value="Telefone" for="telefone2" />
+					<p:inputMask id="telefone2" mask="(99) 99999-9999" value="#{alunoController.aluno.telefone}" style="width: 120px" />
+					
+					<p:outputLabel value="Curso" for="curso2" />
+					<p:selectOneMenu id="curso2" value="#{alunoController.curso}" style="float: left; width: 150px">
+						<f:selectItem itemLabel="Escolha um curso"/>					
+						<f:selectItems value="#{alunoController.cursoSelect}" var="curso" itemValue="#{curso}"/>
+					</p:selectOneMenu>
+					
+					<p:outputLabel value="Logradouro" for="logradouro2" />
+					<p:inputText id="logradouro2" value="#{alunoController.aluno.endereco.logradouro}" style="width: 280px" />
+					
+					<p:outputLabel value="Bairro" for="bairro2" />
+					<p:inputText id="bairro2" value="#{alunoController.aluno.endereco.bairro}" style="width: 280px" />
+					
+					<p:outputLabel value="Complemento" for="complemento2" />
+					<p:inputText id="complemento2" value="#{alunoController.aluno.endereco.complemento}" style="width: 280px" />
+					
+					<p:outputLabel value="CEP" for="cep2" />
+					<p:inputMask id="cep2" mask="99999-999" value="#{alunoController.aluno.endereco.cep}" style="width: 150px" />
+					
+					<p:outputLabel value="Cidade" for="cidade2" />
+					<p:inputText id="cidade2" value="#{alunoController.aluno.endereco.cidade}" style="width: 280px" />
+					
+					<p:outputLabel value="UF" for="uf2" />
+					<p:selectOneMenu id="uf2" value="#{alunoController.aluno.endereco.uf}" style="float: left; width: 150px">						
+						<f:selectItem itemLabel="Vazio por enquanto." itemValue="Vazio."/>
+					</p:selectOneMenu>
+					
+					<p:commandButton value="Salvar" id="salvarEditar-button"
+						action="#{alunoController.editar}"
+						process="alunoEditar-dialog" update="msgs2-dialog painelEditar-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('editarAlunoDialog').hide()" />									
+				</p:panelGrid>
+			</p:dialog>
+			    
+		</h:form>
+	</ui:define>
+</ui:composition>

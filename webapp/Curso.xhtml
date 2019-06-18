@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<ui:composition template="/WEB-INF/templates/Layout.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:ui="http://xmlns.jcp.org/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	
+	<ui:define name="corpo">
+		<br />
+		<h1 class="aw-page-title">Gerenciar Curso</h1>
+		<h:form id="frm">
+			
+			<p:messages id="msgs" closable="true"/>
+			
+			<p:toolbar id="toolbar">
+				<f:facet name="left">
+					<p:commandButton value="Novo" icon="ui-icon-document"
+						process="@this" update="curso-dialog"
+						oncomplete="PF('edicaoCursoDialog').show()">
+						<p:resetInput target="curso-dialog" />
+					</p:commandButton>
+					
+					<span class="ui-separator">
+						<span class="ui-icon ui-icon-grip-dotted-vertical" />
+            		</span>
+            		
+            		<p:commandButton value="Ver" icon="ui-icon-search"
+						process="@this" update="cursoDetail"
+						oncomplete="PF('cursoDialog').show()"
+						disabled="#{cursoController.cursoSelecionado == null}">
+					</p:commandButton>
+            		
+            		<p:commandButton value="Editar" icon="ui-icon-pencil" title="Editar" 
+            			process="@this" update="cursoEditar-dialog"
+            			oncomplete="PF('editarCursoDialog').show()"
+            			disabled="#{cursoController.cursoSelecionado == null}">
+            			<p:resetInput target="cursoEditar-dialog" />
+            			
+            			<f:setPropertyActionListener value="#{cursoController.cursoSelecionado}" 
+            				target="#{cursoController.curso}" />
+            		</p:commandButton>
+
+            		<p:commandButton value="Excluir" icon="ui-icon-trash" title="Excluir"
+            			process="@this" update="cursos msgs toolbar"
+            			action="#{cursoController.deletar}"
+            			disabled="#{cursoController.cursoSelecionado == null}">
+            			
+            			<p:confirm icon="ui-icon-alert" header="Confirmação de exclusão"
+            				message="Tem certeza que deseja excluir o curso?" />
+            			
+            		</p:commandButton>
+				</f:facet>
+			</p:toolbar>
+			
+			<p:dialog header="Novo curso" widgetVar="edicaoCursoDialog" id="curso-dialog"
+					resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs-dialog" />
+				<p:defaultCommand target="salvar-button" scope="curso-dialog" />
+				
+				<p:panelGrid columns="4" id="painel-dialog">
+					<p:outputLabel value="Nome do curso" for="nome" />
+					<p:inputText id="nome" value="#{cursoController.curso.nomeCurso}" style="width: 280px" />
+					
+					<p:outputLabel value="Grau" for="grau" />
+					<p:selectOneMenu id="grau" value="#{cursoController.curso.grau}" style="float: left; width: 150px">						
+						<f:selectItem itemLabel="Escolha o grau" itemValue=""/>
+						<f:selectItem itemLabel="Bacharelado" itemValue="Bacharelado"/>
+						<f:selectItem itemLabel="Licenciatura" itemValue="Licenciatura"/>
+						<f:selectItem itemLabel="Tecnólogo" itemValue="Tecnólogo"/>
+					</p:selectOneMenu>
+					
+					<p:outputLabel value="Perfil profissional" for="perfil" />
+					<p:inputText id="perfil" value="#{cursoController.curso.perfilProfissional}" style="width: 280px" />
+					
+					<p:outputLabel value="Área de atuação" for="area" />
+					<p:inputText id="area" value="#{cursoController.curso.areaAtuacao}" style="width: 280px" />
+					
+					<p:commandButton value="Salvar" id="salvar-button"
+						action="#{cursoController.salvar}"
+						process="curso-dialog" update="msgs-dialog painel-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('edicaoCursoDialog').hide()" />									
+				</p:panelGrid>
+			</p:dialog>
+			
+			<p:dataTable id="cursos" var="curso" widgetVar="cursosTable" value="#{cursoController.listaCursos}" rowKey="#{curso.id}"
+				 emptyMessage="Sem cadastros até o momento."
+                 selection="#{cursoController.cursoSelecionado}" selectionMode="single">
+                 	
+                <p:ajax event="rowSelect" update=":frm:toolbar" />
+				<p:ajax event="rowUnselect" update=":frm:toolbar" />
+                 
+			    <p:column headerText="Id">
+			    	<h:outputText value="#{curso.id}" />
+			    </p:column>
+			    <p:column headerText="Nome">
+			        <h:outputText value="#{curso.nomeCurso}" />
+			    </p:column>
+			    <p:column headerText="Grau">
+			        <h:outputText value="#{curso.grau}" />
+			    </p:column>
+			</p:dataTable> 
+			 
+			<p:dialog header="Curso Info" widgetVar="cursoDialog" modal="true" showEffect="fade" hideEffect="fade" resizable="false">
+				<p:outputPanel id="cursoDetail" style="text-align:center;">
+			   		<p:panelGrid  columns="2" rendered="#{not empty cursoController.cursoSelecionado}" columnClasses="label,value">
+			                
+			      		<h:outputText value="Id" />
+			            <h:outputText value="#{cursoController.cursoSelecionado.id}" />
+			 
+			            <h:outputText value="Nome" />
+			            <h:outputText value="#{cursoController.cursoSelecionado.nomeCurso}" />
+			 
+			            <h:outputText value="Grau" />
+			            <h:outputText value="#{cursoController.cursoSelecionado.grau}"/>
+			 
+			            <h:outputText value="Perfil profissional" />
+			            <h:outputText value="#{cursoController.cursoSelecionado.perfilProfissional}" />
+			            
+			            <h:outputText value="Área de atuação" />
+			            <h:outputText value="#{cursoController.cursoSelecionado.areaAtuacao}" />
+			       	</p:panelGrid>
+				</p:outputPanel>
+			</p:dialog>
+			    
+			<p:dialog header="Editar curso" widgetVar="editarCursoDialog" id="cursoEditar-dialog"
+				resizable="false" modal="true" closeOnEscape="true">
+				
+				<p:messages id="msgs2-dialog" />
+				<p:defaultCommand target="salvarEditar-button" scope="cursoEditar-dialog" />
+				
+				<p:panelGrid columns="4" id="painelEditar-dialog">
+					<p:outputLabel value="Nome do curso" for="nome2" />
+					<p:inputText id="nome2" value="#{cursoController.curso.nomeCurso}" style="width: 280px" />
+					
+					<p:outputLabel value="Grau" for="grau2" />
+					<p:selectOneMenu id="grau2" value="#{cursoController.curso.grau}" style="float: left; width: 150px">						
+						<f:selectItem itemLabel="Escolha o grau" itemValue=""/>
+						<f:selectItem itemLabel="Bacharelado" itemValue="Bacharelado"/>
+						<f:selectItem itemLabel="Licenciatura" itemValue="Licenciatura"/>
+						<f:selectItem itemLabel="Tecnólogo" itemValue="Tecnólogo"/>
+					</p:selectOneMenu>
+					
+					<p:outputLabel value="Perfil profissional" for="perfil2" />
+					<p:inputText id="perfil2" value="#{cursoController.curso.perfilProfissional}" style="width: 280px" />
+					
+					<p:outputLabel value="Área de atuação" for="area2" />
+					<p:inputText id="area2" value="#{cursoController.curso.areaAtuacao}" style="width: 280px" />
+					
+					<p:commandButton value="Salvar" id="salvarEditar-button"
+						action="#{cursoController.editar}"
+						process="cursoEditar-dialog" update="cursos msgs2-dialog painelEditar-dialog msgs"
+						oncomplete="if (!args.validationFailed) PF('editarCursoDialog').hide()" />									
+				</p:panelGrid>
+			</p:dialog>
+			    
+		</h:form>
+	</ui:define>
+</ui:composition>
